@@ -1,10 +1,5 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-package whiteboard.graphics;
 
+package com.whiteboard.graphics;
 
 import java.awt.BasicStroke;
 import java.awt.Graphics;
@@ -12,7 +7,7 @@ import java.awt.Graphics2D;
 import java.util.ArrayList;
 import javax.swing.JPanel;
 import java.awt.event.*;
-import whiteboard.Control;
+import com.whiteboard.Control;
 
 /**
  * This class describes the whiteboard as seen by any user. The board will
@@ -57,9 +52,7 @@ public class Board extends JPanel {
         this.addMouseListener(mListener);
         this.addMouseMotionListener(mListener);
         this.newFigure();
-
         this.setSize(w, h);
-
         this.setVisible(true);
 
     }
@@ -81,7 +74,7 @@ public class Board extends JPanel {
         }
 
         this.currentGuestFigure++;
-
+        System.out.println(f.toString());
     }
 
     /**
@@ -150,12 +143,13 @@ public class Board extends JPanel {
     public void paint(Graphics g) {
 
         Graphics2D g2 = (Graphics2D) g;
+        g2.setStroke(new BasicStroke(3));
+        
         //Draw this board's figures
         synchronized (figures) {
-            
+
             for (Figure f : this.figures) {
-                
-                g2.setStroke(new BasicStroke (3));
+
                 for (int i = 0; i < f.xPoints.size(); ++i) {
                     int x = f.getxPoints().get(i);
                     int y = f.getyPoints().get(i);
@@ -165,9 +159,10 @@ public class Board extends JPanel {
                         int py = f.getyPoints().get(i - 1);
                         g2.drawLine(x, y, px, py);
 
+                    } else {
+                        g2.drawLine(x, y, x, y);
                     }
-                    //g.drawOval(x, y, 3, 3);
-                    //g.fillOval(x, y, 3, 3);
+
                 }
             }
         }
@@ -179,9 +174,16 @@ public class Board extends JPanel {
                 for (int i = 0; i < f.xPoints.size(); ++i) {
                     int x = f.getxPoints().get(i);
                     int y = f.getyPoints().get(i);
-                     g2.drawLine(x, y, x, y);
-                    //g.drawOval(x, y, 2, 2);
-                    //g.fillOval(x, y, 2, 2);
+
+                    if (i > 0) {
+                        int px = f.getxPoints().get(i - 1);
+                        int py = f.getyPoints().get(i - 1);
+                        g2.drawLine(x, y, px, py);
+
+                    } else {
+                        g2.drawLine(x, y, x, y);
+                    }
+
                 }
             }
         }
@@ -219,43 +221,33 @@ public class Board extends JPanel {
 
             this.drawing = true;
             this.board.drawingStarted();
+            this.board.tracePoint(e.getX(), e.getY());
             System.out.println(this.drawing);
         }
 
         @Override
         public void mouseReleased(MouseEvent e) {
-
             this.drawing = false;
             this.board.drawingFinished();
-            //    System.out.println(this.drawing);
         }
 
         @Override
         public void mouseEntered(MouseEvent e) {
-            //  throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
         }
 
         @Override
         public void mouseExited(MouseEvent e) {
-            //throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
         }
 
         @Override
         public void mouseDragged(MouseEvent e) {
-//            System.out.println("Drawing");
-//            this.board.drawingStarted();
             this.board.tracePoint(e.getX(), e.getY());
-//            this.board.drawingFinished();
 
         }
 
         @Override
         public void mouseMoved(MouseEvent e) {
 
-            //  System.out.println(drawing);
-//           if(drawing){
-//               this.board.tracePoint(e.getX(), e.getY());
-//           }
         }
 
     }

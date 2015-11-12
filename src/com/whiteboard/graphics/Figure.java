@@ -1,9 +1,5 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-package whiteboard.graphics;
+
+package com.whiteboard.graphics;
 import java.util.ArrayList;
 /**
  * This class describes a figure as a set of points.
@@ -52,7 +48,14 @@ public class Figure {
         return yPoints;
     }
     
-    
+    @Override
+    public String toString(){
+        String r = "";
+        for(int i = 0; i < this.xPoints.size(); ++i){
+            r += this.xPoints.get(i) + "," + this.yPoints.get(i) + ";";
+        }
+        return r;
+    }
     
    
 }

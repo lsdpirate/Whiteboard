@@ -3,17 +3,26 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package whiteboard;
+package com.whiteboard;
 
 import java.io.IOException;
-import whiteboard.graphics.Board;
-import whiteboard.graphics.Figure;
-import whiteboard.graphics.MainView;
-import whiteboard.net.NetworkControl;
-import whiteboard.net.NetConstants;
+import com.whiteboard.graphics.Board;
+import com.whiteboard.graphics.ExceptionNotifier;
+import com.whiteboard.graphics.Figure;
+import com.whiteboard.graphics.MainView;
+import com.whiteboard.net.NetworkControl;
+import com.whiteboard.net.NetConstants;
 
 /**
- *
+ * IMPORTANT: all exception handling is built in a very poor way as for 1.0.
+ * Will still keep it this way because i'll figure out a better way in the
+ * future (~1.3).
+ * The control class synchronizes the view with the model(s).
+ * This class is the first thing created at the start of the program and then
+ * initializes everything else. This class will be kept as far away as possible
+ * from being a GodClass.
+ * @since 1.0
+ * @version 1.0
  * @author lsdpirate
  */
 public class Control {
@@ -39,6 +48,25 @@ public class Control {
         this.thisBoard = new Board(this.view.getWidth(), this.view.getHeight());
         this.view.setBoard(thisBoard);
        
+        Runtime.getRuntime().addShutdownHook(new Thread(){
+        
+            @Override
+            public void run(){
+                
+                if(networkControl != null){
+                    try {
+                        networkControl.stopRunningService();
+                    } catch (IOException ex) {
+                        
+                    } catch (InterruptedException ex) {
+                        
+                    }
+                }
+            }
+        
+        });
+        
+        
     }
 
     /**
@@ -86,10 +114,14 @@ public class Control {
             this.connected = this.networkControl.isConnectionEstablished();
 
         } catch (IOException ex) {
-            System.out.println("ex");
-            System.out.println(ex.getMessage());
+            String message = "Something went wrong initializing the server service.\n"
+                    + "Try restarting the program. ex:{" + ex.getMessage() + "}";
+            ExceptionNotifier.notifyException(message);
+            
         } catch (InterruptedException ex) {
-            //Send error to gui
+            String message = "Something went wrong initializing the server service.\n"
+                    + "Try restarting the program. ex:{" + ex.getMessage() + "}";
+            ExceptionNotifier.notifyException(message);
         }
     }
 
@@ -101,15 +133,23 @@ public class Control {
         this.initializeNetwork();
         
         try {
-            
+            if(sessionIp == null || sessionIp.equals("")){
+                throw new InvalidInputException("The entered ip is not correct");
+            }
             this.networkControl.startClientService(sessionIp, NetConstants.DEF_PORT);
             this.connected = this.networkControl.isConnectionEstablished();
             
         } catch (IOException ex) {
-            System.out.println(ex.getMessage());
+            String message = "Something went wrong initializing the client service.\n"
+                    + "Try restarting the program. \n ex:{" + ex.getMessage() + "}";
+            ExceptionNotifier.notifyException(message);
             
         } catch (InterruptedException ex) {
-            //Send error to gui
+              String message = "Something went wrong initializing the client service.\n"
+                    + "Try restarting the program. \n ex:{" + ex.getMessage() + "}";
+            ExceptionNotifier.notifyException(message);
+        } catch(InvalidInputException ex){
+                ExceptionNotifier.notifyException(ex.getMessage());
         }
     }
 
@@ -123,10 +163,16 @@ public class Control {
         try {
             this.networkControl.startClientService(sessionIp, port);
             this.connected = this.networkControl.isConnectionEstablished();
+            
         } catch (IOException ex) {
-            System.out.println(ex.getMessage());
+            String message = "Something went wrong initializing the client service.\n"
+                    + "Try restarting the program. \n ex:{" + ex.getMessage() + "}";
+            ExceptionNotifier.notifyException(message);
+            
         } catch (InterruptedException ex) {
-            //Send error to gui.
+              String message = "Something went wrong initializing the client service.\n"
+                    + "Try restarting the program. \n ex:{" + ex.getMessage() + "}";
+            ExceptionNotifier.notifyException(message);
         }
     }
 
@@ -145,5 +191,17 @@ public class Control {
      */
     public static Control getInstance() {
         return thisInstance;
+    }
+    
+    
+    public void connectionClosed(){
+    
+        ExceptionNotifier.notifyException("Connection was closed");
+    }
+    
+    
+    public void connectionClosed(String message){
+    
+        ExceptionNotifier.notifyException(message);
     }
 }
